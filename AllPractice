@@ -1,0 +1,668 @@
+Discount factors and depreciation
+Unfortunately, not everything grows in value over time.
+In fact, many assets depreciate, or lose value over time. To simulate this, you can simply assume a negative expected rate of return.
+
+
+# Calculate the future value
+initial_investment = 100
+growth_rate = -0.05
+growth_periods = 10
+future_value = initial_investment*(1 + growth_rate)**(growth_periods)
+print("Future value: " + str(round(future_value, 2)))
+
+# Calculate the discount factor
+discount_factor = 1/((1 + growth_rate)**(growth_periods))
+print("Discount factor: " + str(round(discount_factor, 2)))
+
+# Derive the initial value of the investment
+initial_investment_again = future_value*discount_factor
+print("Initial value: " + str(round(initial_investment_again, 2)))
+
+
+Present value
+Luckily for you, there is a module called numpy which contains many functions which will make your life much easier when working with financial values.
+The .pv(rate, nper, pmt, fv) function, for example, allows you to calculate the present value of an investment as before with a few simple parameters:
+•	rate: The rate of return of the investment
+•	nper: The lifespan of the investment
+•	pmt: The (fixed) payment at the beginning or end of each period (which is 0 in our example)
+•	fv: The future value of the investment
+You can use this formula in many ways. For example, you can calculate the present value of future investments in today's dollars.
+# Import numpy as np
+import numpy as np 
+
+# Calculate investment_1
+investment_1 = np.pv(rate=.03, nper=15, pmt=0, fv=10000)
+
+# Note that the present value returned is negative, so we multiply the result by -1
+print("Investment 1 is worth " + str(round(-investment_1, 2)) + " in today's dollars")
+
+# Calculate investment_2
+investment_2 = np.pv(rate=.05, nper=10, pmt=0, fv=10000)
+print("Investment 2 is worth " + str(round(-investment_2, 2)) + " in today's dollars")
+
+Future value
+The numpy module also contains a similar function, .fv(rate, nper, pmt, pv), which allows you to calculate the future value of an investment as before with a few simple parameters:
+•	rate: The rate of return of the investment
+•	nper: The lifespan of the investment
+•	pmt: The (fixed) payment at the beginning or end of each period (which is 0 in our example)
+•	pv: The present value of the investment
+It is important to note that in this function call, you must pass a negative value into the pv parameter if it represents a negative cash flow (cash going out). In other words, if you were to compute the future value of an investment, requiring an up-front cash payment, you would need to pass a negative value to the pv parameter in the .fv() function
+
+import numpy as np
+
+# Calculate investment_1
+investment_1 = np.fv(rate=.05, nper=15, pmt=0, pv=-10000)
+print("Investment 1 will yield a total of $" + str(round(investment_1, 2)) + " in 15 years")
+
+# Calculate investment_2
+investment_2 = np.fv(rate=.08, nper=15, pmt=0, pv=-10000)
+print("Investment 2 will yield a total of $" + str(round(investment_2, 2)) + " in 15 years")
+Adjusting future values for inflation
+You can now put together what you learned in the previous exercises by following a simple methodology:
+•	First, forecast the future value of an investment given a rate of return
+•	Second, discount the future value of the investment by a projected inflation rate
+The methodology above will use both the .fv() and .pv() functions to arrive at the projected value of a given investment in today's dollars, adjusted for inflation.
+import numpy as np
+
+# Calculate investment_1
+investment_1 = np.fv(rate=.08, nper=10, pmt=0, pv=-10000)
+print("Investment 1 will yield a total of $" + str(round(investment_1, 2)) + " in 10 years")
+
+# Calculate investment_2
+investment_1_discounted = np.pv(rate=.03, nper=10, pmt=0, fv=investment_1)
+print("After adjusting for inflation, investment 1 is worth $" + str(round(-investment_1_discounted, 2)) + " in today's dollars")
+.
+Discounting cash flows
+You can use numpy's net present value function numpy.npv(rate, values) to calculate the net present value of a series of cash flows. You can create these cash flows by using a numpy.array([...]) of values.
+Compute the NPV of the same cash flows from the following project, but assuming different discount rates:
+import numpy as np
+
+# Predefined array of cash flows
+cash_flows = np.array([100, 100, 100, 100, 100])
+
+# Calculate investment_1
+investment_1 = np.npv(rate=.03, values = cash_flows)
+print("Investment 1's net present value is $" + str(round(investment_1, 2)) + " in today's dollars")
+
+# Calculate investment_2
+investment_2 = np.npv(rate=.05, values = cash_flows)
+print("Investment 2's net present value is $" + str(round(investment_2, 2)) + " in today's dollars")
+
+# Calculate investment_3
+investment_3 = np.npv(rate=.07, values = cash_flows)
+print("Investment 3's net present value is $" + str(round(investment_3, 2)) + " in today's dollars")
+Initial project costs
+The numpy.npv(rate, values) function is very powerful because it allows you to pass in both positive and negative values.
+For this exercise, you will calculate the net present value of two potential projects with different cash flows:
+import numpy as np
+
+# Create an array of cash flows for project 1
+cash_flows_1 = np.array([-250,100,200,300,400])
+
+# Create an array of cash flows for project 2
+cash_flows_2 = np.array([-250,300,-250,300,300])
+
+# Calculate the net present value of project 1
+investment_1 = np.npv(rate=.03, values=cash_flows_1)
+print("The net present value of Investment 1 is worth $" + str(round(investment_1, 2)) + " in today's dollars")
+
+# Calculate the net present value of project 2
+investment_2 = np.npv(rate=.03, values=cash_flows_2)
+print("The net present value of Investment 2 is worth $" + str(round(investment_2, 2)) + " in today's dollars")
+
+Diminishing cash flows
+Remember how compounded returns grow rapidly over time? Well, it works in the reverse, too. Compounded discount factors over time will quickly shrink a number towards zero.
+For example, $100 at a 3% annual discount for 1 year is still worth roughly $97.08:
+
+
+import numpy as np
+
+# Calculate investment_1
+investment_1 = np.pv(rate=.03, nper=30, pmt=0, fv=100)
+print("Investment 1 is worth $" + str(round(-investment_1, 2)) + " in today's dollars")
+
+# Calculate investment_2
+investment_2 = np.pv(rate=.03, nper=50, pmt=0, fv=100)
+print("Investment 2 is worth $" + str(round(-investment_2, 2)) + " in today's dollars")
+
+# Calculate investment_3
+investment_3 = np.pv(rate=.03, nper=100, pmt=0, fv=100)
+print("Investment 3 is worth $" + str(round(-investment_3, 2)) + " in today's dollars")
+Project proposals and cash flows projections
+Your project managers have projected the cash flows for each of the proposals.
+Project 1 provides higher short term cash flows, but Project 2 becomes more profitable over time.
+The cash flow projections for both projects are as follows:
+import numpy as np
+
+# Create a numpy array of cash flows for Project 1
+cf_project_1 = np.array([-1000,200,250,300,350,400,450,500,550,600])
+
+# Create a numpy array of cash flows for Project 2
+cf_project_2 = np.array([-1000,150,225,300,375,425,500,575,600,625])
+
+# Scale the original objects by 1000x
+cf_project1 = cf_project_1*1000
+cf_project2 = cf_project_2*1000
+Internal Rate of Return
+Now that you have the cash flow projections ready to go for each project, you want to compare the internal rate of return (IRR) of each project to help you decide which project would be most beneficial for your company in terms of yield (rate of return). In this exercise, you will calculate the internal rate of return for each project using np.irr(values).
+The cash flows for projects 1 and 2 are available as cf_project1 and cf_project2.
+import numpy as np
+
+# Calculate the internal rate of return for Project 1
+irr_project1 = np.irr(cf_project1)
+print("Project 1 IRR: " + str(round(100*irr_project1, 2)) + "%")
+
+# Calculate the internal rate of return for Project 2
+irr_project2 = np.irr(cf_project2)
+print("Project 2 IRR: " + str(round(100*irr_project2, 2)) + "%")
+Debt and equity financing
+In the previous chapter, you were able to assume that your discount rate for the NPV calculation was solely based on a measure such as inflation.
+However, in this chapter, you are the CEO of a new company that has outstanding debt and financing costs, which you will have to adjust for.
+You will use the WACC as your discount rate in upcoming exercises.
+For this exercise, assume you take out a $1,000,000 loan to finance the project, which will be your company's only outstanding debt. This loan will represent 50% of your company's total financing of $2,000,000. The remaining funding comes from the market value of equity.
+# Set the market value of debt
+mval_debt = 1000000 
+
+# Set the market value of equity
+mval_equity = 1000000
+
+# Compute the total market value of your company's financing
+mval_total = 2000000
+
+# Compute the proportion of your company's financing via debt
+percent_debt = mval_debt/mval_total
+print("Debt Financing: " + str(round(100*percent_debt, 2)) + "%")
+
+# Compute the proportion of your company's financing via equity
+percent_equity = mval_equity/mval_total
+print("Equity Financing: " + str(round(100*percent_equity, 2)) + "%")
+Calculating WACC
+In addition to determining the proportion of both equity and debt financing, you will need to estimate the cost of financing via both debt and equity in order to estimate your WACC.
+The cost of debt financing can be estimated as the amount you will have to pay on a new loan. This can be estimated by looking at the interest rates of loans of similar sizes to similar companies, or could be based on previous loans your company may already have been issued.
+The cost of equity financing can be estimated as the return on equity of similar companies. Calculating the return on equity is a simple accounting exercise, but all you need to know is that essentially, investors will require a rate of return that is close to what could be earned by a similar investment
+# The proportion of debt vs equity financing is predefined
+percent_debt = 0.50
+percent_equity = 0.50
+
+# Set the cost of equity
+cost_equity = .18
+
+# Set the cost of debt
+cost_debt = .12
+
+# Set the corporate tax rate
+tax_rate = .35
+
+# Calculate the WACC
+wacc = (percent_equity*cost_equity) + (percent_debt*cost_debt) *          (1 - tax_rate)
+print("WACC: " + str(round(100*wacc, 2)) + "%")
+Comparing project NPV with IRR
+Companies use their WACC as the discount rate when calculating the net present value of potential projects.
+In the same way that you discounted values by inflation in the previous chapter to account for costs over time, companies adjust the cash flows of potential projects by their cost of financing (the WACC) to account for their investor's required rate of return based on market conditions.
+Now that you calculated the WACC, you can determine the net present value (NPV) of each project's cash flows. The cash flows for projects 1 and 2 are available as cf_project1 and cf_project2.
+# The proportion of debt vs equity financing is predefined
+percent_debt = 0.50
+percent_equity = 0.50
+
+# Set the cost of equity
+cost_equity = .18
+
+# Set the cost of debt
+cost_debt = .12
+
+# Set the corporate tax rate
+tax_rate = .35
+
+# Calculate the WACC
+wacc = (percent_equity*cost_equity) + (percent_debt*cost_debt) *          (1 - tax_rate)
+print("WACC: " + str(round(100*wacc, 2)) + "%")
+Two project with different lifespans
+The board of the company has decided to go a different direction, involving slightly shorter term projects and lower initial investments.
+Your project managers have come up with two new ideas, and projected the cash flows for each of the proposals.
+Project 1 has a lifespan of 8 years, but Project 2 only has a lifespan of 7 years. Project 1 requires an initial investment of $700,000, but Project 2 only requires $400,000.
+The cash flow projections for both projects are as follows:
+import numpy as np
+
+# Create a numpy array of cash flows for Project 1
+cf_project_1 = np.array([-700,100,150,200,250,300,350,400])
+
+# Create a numpy array of cash flows for Project 2
+cf_project_2 = np.array([-400,50,100,150,200,250,300])
+
+# Scale the original objects by 1000x
+cf_project1 = cf_project_1*1000
+cf_project2 = cf_project_2*1000
+
+
+Calculating IRR and NPV with different project lifespans
+Now that you calculated the WACC, you can calculate and compare the IRRs and NPVs of each project.
+While the IRR remains relatively comparable across projects, the NPV, on the other hand, will be much more difficult to compare given the additional year required for project 1.
+Luckily, in the next exercise, we will introduce another method to compare the NPVs of the projects, but we will first need to compute the NPVs as before.
+The cash flows for projects 1 and 2 are available as cf_project1 and cf_project2.
+
+import numpy as np
+
+# Calculate the IRR for Project 1
+irr_project1 = np.irr(cf_project1)
+print("Project 1 IRR: " + str(round(100*irr_project1, 2)) + "%")
+
+# Calculate the IRR for Project 2
+irr_project2 = np.irr(cf_project2)
+print("Project 2 IRR: " + str(round(100*irr_project2, 2)) + "%")
+
+# Set the wacc equal to 12.9%
+wacc = .129
+
+# Calculate the NPV for Project 1
+npv_project1 = np.npv(wacc, cf_project1)
+print("Project 1 NPV: " + str(round(npv_project1, 2)))
+
+# Calculate the NPV for Project 2
+npv_project2 = np.npv(wacc, cf_project2)
+print("Project 2 NPV: " + str(round(npv_project2, 2)))
+Using the equivalent annual annuity approach
+Since the net present values of each project are not directly comparable given the different lifespans of each project, you will have to consider a different approach.
+The equivalent annual annuity (EAA) approach allows us to compare two projects by essentially assuming that each project is an investment generating a flat interest rate each year (an annuity), and calculating the annual payment you would receive from each project, discounted to present value.
+You can compute the EAA of each project using the .pmt(rate, nper, pv, fv) function in numpy.
+The weighted average cost is available as wacc, and the net present values for projects 1 and 2 are available as npv_project1 and npv_project2.
+import numpy as np
+
+# Calculate the EAA for Project 1
+eaa_project1 = np.pmt(rate=wacc, nper=8, pv=-npv_project1, fv=0)
+print("Project 1 EAA: " + str(round(eaa_project1, 2)))
+
+# Calculate the EAA for Project 2
+eaa_project2 = np.pmt(rate=wacc, nper=7, pv=-npv_project2, fv=0)
+print("Project 2 EAA: " + str(round(eaa_project2, 2)))
+Taking out a mortgage loan
+You're expecting a child soon, and its time to start looking for a home.
+You're currently living out of an apartment in New York City, but your blossoming career as a Data Scientist has allowed you to save up a sizable sum and purchase a home in neighboring Hoboken, New Jersey.
+You have decided to purchase a beautiful brownstone home in the $800,000 range. While you do have a considerable amount of cash on hand, you don't have enough to purchase the entire home outright, which means you will have to take the remaining balance out as a mortgage loan. From the sound of it, you'll have to put about 20% down up-front to a mortgage loan of that size.
+This up-front payment is known as a down payment.
+import numpy as np
+
+# Set the value of the home you are looking to buy
+home_value = 800000
+
+# What percentage are you paying up-front?
+down_payment_percent = .2
+
+# Calculate the dollar value of the down payment
+down_payment = home_value*down_payment_percent
+print("Initial Down Payment: " + str(down_payment))
+
+# Calculate the value of the mortgage loan required after the down payment
+mortgage_loan = 800000-down_payment
+print("Mortgage Loan: " + str(mortgage_loan))
+Calculating the monthly mortgage payment
+In order to make sure you can afford the home, you will have to calculate the monthly mortgage payment you will have to make on a loan that size.
+Now, since you will be paying a monthly mortgage, you will have to convert each of the parameters into their monthly equivalents. Be careful when adjusting the interest rate, which is compounding!
+In order to calculate the monthly mortgage payment, you will use the numpy function .pmt(rate, nper, pv) where:
+•	rate = The periodic (monthly) interest rate
+•	nper = The number of payment periods (months) in the lifespan of the mortgage loan
+•	pv = The total value of the mortgage loan
+You have been given a 30-year mortgage loan quote for your desired amount at 3.75%. The value of the mortgage loan is available as mortgage_loan.
+The annual mortgage rate is available as mortgage_rate
+import numpy as np
+
+# Set the value of the home you are looking to buy
+home_value = 800000
+
+# What percentage are you paying up-front?
+down_payment_percent = .2
+
+# Calculate the dollar value of the down payment
+down_payment = home_value*down_payment_percent
+print("Initial Down Payment: " + str(down_payment))
+
+# Calculate the value of the mortgage loan required after the down payment
+mortgage_loan = 800000-down_payment
+print("Mortgage Loan: " + str(mortgage_loan))
+Calculating interest and principal payments
+Due to the size of the mortgage loan, you begin the mortgage in the initial period by paying mostly interest and retaining very little principal, or equity that goes towards the ownership of your home.
+This means that if you were to stop paying your mortgage and sell your home after only a few years, the bank would actually own most of the home because what you paid was mostly interest, and very little principal.
+mortgage_loan, mortgage_rate_periodic, and periodic_mortgage_payment from the third exercise are available for use.
+# Calculate the amount of the first loan payment that will go towards interest
+initial_interest_payment = mortgage_loan*mortgage_rate_periodic
+print("Initial Interest Payment: " + str(round(initial_interest_payment, 2)))
+# Calculate the amount of the first loan payment that will go towards principal
+initial_principal_payment = periodic_mortgage_payment- initial_interest_payment
+print("Initial Principal Payment: " + str(round(initial_principal_payment, 2)))
+Simulating periodic payments (I)
+You have all the tools you'll need to simulate the mortgage payments over time.
+Every time a mortgage payment is made, the following payment will have a slightly lower percentage, which is used to pay off interest. This means that more of the remainder will go towards the portion of the home that you own instead of the bank. This is important to determine how much you will gain from selling the home before paying off your mortgage, or to determine when your mortgage is underwater. But more on that later.
+You will now write a simple program to calculate the interest and mortgage portions of each payment over time.
+The mortgage_loan, mortgage_rate_periodic, and periodic_mortgage_payment variables from the third exercise are available for use.
+The principal_remaining variable is initialized as an array of 0's with length equal to the number of payment periods.
+# Loop through each mortgage payment period
+for i in range(0, mortgage_payment_periods):
+    
+    # Handle the case for the first iteration
+    if i == 0:
+        previous_principal_remaining = mortgage_loan
+    else:
+        previous_principal_remaining =  principal_remaining[i-1] 
+    # Calculate the interest and principal payments
+    interest_payment = round(previous_principal_remaining*mortgage_rate_periodic, 2)
+    principal_payment = round(periodic_mortgage_payment-interest_payment, 2)
+    
+    # Catch the case where all principal is paid off in the final period
+    if previous_principal_remaining - principal_payment < 0:
+        principal_payment = previous_principal_remaining
+        
+    # Collect the principal remaining values in an array
+    principal_remaining[i] = previous_principal_remaining - principal_payment
+    
+    # Print the payments for the first few periods
+    print_payments(i, interest_payment, principal_payment, principal_remaining)
+Simulating periodic payments (II)
+You have decided to extend your program from the previous exercise to store the principal and interest payments made at each period, and to plot the results instead of simply printing them.
+For this example, the plotting code is already done, so you just need to finish the logic inside the for loop and the initialization of the variables which will be updated at each iteration.
+# Loop through each mortgage payment period
+for i in range(0, mortgage_payment_periods):
+    
+    # Handle the case for the first iteration
+    if i == 0:
+        previous_principal_remaining = mortgage_loan
+    else:
+        previous_principal_remaining = principal_remaining[i-1]
+        
+    # Calculate the interest based on the previous principal
+    interest_payment = round(previous_principal_remaining*mortgage_rate_periodic, 2)
+    principal_payment = round(periodic_mortgage_payment - interest_payment, 2)
+    
+    # Catch the case where all principal is paid off in the final period
+    if previous_principal_remaining - principal_payment < 0:
+        principal_payment = previous_principal_remaining
+        
+    # Collect the historical values
+    interest_paid[i] = interest_payment
+    principal_paid[i] = principal_payment
+    principal_remaining[i] = previous_principal_remaining- principal_payment
+    
+# Plot the interest vs principal
+plt.plot(interest_paid, color="red")
+plt.plot(principal_paid, color="blue")
+plt.legend(handles=[interest_plot, principal_plot], loc=2)
+plt.show()
+Cumulative payments and home equity
+You are faithfully paying your mortgage each month, but it's difficult to tell how much of the house you actually own and how much interest you have paid in total over the years.
+Use np.cumsum() to add up all the interest payments and also to add up all the principal payments over time to see how your ownership changes over time.
+Recall that np.cumsum() performs a cumulative sum over time. Return a series of iterative sums instead of just a single number.
+principal_paid, interest_paid, home_value and down_payment_percent from the previous exercise are available.
+import numpy as np
+
+# Calculate the cumulative home equity (principal) over time
+cumulative_home_equity = np.cumsum(principal_paid)
+
+# Calculate the cumulative interest paid over time
+cumulative_interest_paid = np.cumsum(interest_paid)
+
+# Calculate your percentage home equity over time
+cumulative_percent_owned = down_payment_percent + (np.cumsum(principal_paid)/home_value)
+print(cumulative_percent_owned)
+
+# Plot the cumulative interest paid vs equity accumulated
+plt.plot(cumulative_interest_paid, color='red')
+plt.plot(cumulative_home_equity, color='blue')
+plt.legend(handles=[interest_plot, principal_plot], loc=2)
+plt.show()
+Rising housing prices
+Home values have been rising steadily each year, and this is a rather large investment for you.
+Calculate your home equity value over time given a steady growth rate of 0.25% per month. A repeated array of this growth rate (with a length equal to the number of mortgage payment periods) is already stored for you in an object called growth_array.
+The home_value and cumulative_percent_owned variables from the previous exercise are availab
+import numpy as np
+
+# Calculate the cumulative growth over time
+cumulative_growth_forecast = np.cumprod(growth_array+1)
+
+# Forecast the home value over time
+home_value_forecast = cumulative_growth_forecast*home_value
+
+# Forecast the home equity value owned over time
+cumulative_home_value_owned = home_value_forecast*cumulative_percent_owned
+
+# Plot the home value vs equity accumulated
+plt.plot(home_value_forecast, color='red')
+plt.plot(cumulative_home_value_owned, color='blue')
+plt.legend(handles=[homevalue_plot, homeequity_plot], loc=2)
+plt.show()
+Falling housing prices and underwater mortgages
+Unfortunately, you are also well aware that home prices don't always rise.
+An underwater mortgage is when the remaining amount you owe on your mortgage is actually higher than the value of the house itself.
+In this exercise, you will calculate the worst case scenario where home prices drop steadily at the rate of 0.45% per month. To speed things up, the cumulative drop in home prices has already been forecasted and stored for you in a variable called cumulative_decline_forecast, which is an array of multiplicative discount factors compared to today's price - no need to add 1 to the rate array.
+The outstanding principal on the mortgage is available as principal_remaining.
+
+import numpy as np
+import pandas as pd
+
+# Cumulative drop in home value over time as a ratio
+cumulative_decline_forecast = np.cumprod(1+decline_array)
+import itertools
+
+# Forecast the home value over time
+home_value_forecast  = cumulative_decline_forecast*home_value
+
+# Find all periods where your mortgage is underwater
+underwater =[]
+
+i = 0
+for j in home_value_forecast:
+    if(principal_remaining[i]>home_value_forecast[i]):
+        underwater.append(True)
+    else:
+        underwater.append(False)
+    i = i+1
+
+# pd.value_counts(cumulative_decline_forecast,home_value_forecast)
+
+# Plot the home value vs principal remaining
+plt.plot(home_value_forecast, color='red')
+plt.plot(principal_remaining, color='blue')
+plt.legend(handles=[homevalue_plot, principal_plot], loc=2)
+plt.show()
+Salary and taxes
+You just got a new job as an entry-level Data Scientist at a technology company in New York City with a decent starting salary of $85,000 per year.
+Unfortunately, after state and local taxes, you can expect to be sending roughly 30% back to the government each year.
+You will need to calculate your monthly take home pay after taxes in order to begin budgeting.
+# Enter your annual salary
+salary = 85000
+
+# Assume a tax rate of 30%
+tax_rate = .3
+
+# Calculate your salary after taxes
+salary_after_taxes = salary-(salary *tax_rate)
+print(salary_after_taxes)
+#^^this is the dumbest bullshit ive ever seen in my god damn life 
+salary_after_taxes = salary*(1-tax_rate)
+print(salary_after_taxes)
+print("Salary after taxes: " + str(round(salary_after_taxes, 2)))
+
+# Calculate your monthly salary after taxes
+monthly_takehome_salary = salary_after_taxes/12
+print("Monthly takehome salary: " + str(round(monthly_takehome_salary, 2)))
+Monthly expenses and savings
+In order to make it in New York City, you have decided to split a two-bedroom apartment with a friend. You will have to budget for rent, food and entertainment, but it's also a good idea to allocate an amount for unforeseen expenses each month. This unforeseen expenses budget could be used for anything ranging from new clothes or electronics to doctor appointments.
+Set up your monthly budget as follows:
+•	Rent: $1200 / month (Includes utilities)
+•	Food: $30 / day (On average. Includes groceries and eating out.)
+•	Entertainment: $200 / month (Movies, drinks, museums, parties…)
+•	Unforeseen Expenses: 250 / month (Stay safe, and don't drop your phone!)
+For this application, assume an average of 30 days per month. Whatever is left after your paying your monthly expenses will go into your savings account each month.
+monthly_takehome_salary from the previous exercise is available.
+# Enter your monthly rent
+monthly_rent = 1200 
+
+# Enter your daily food budget
+daily_food_budget = 30 
+
+# Calculate your monthly food budget assuming 30 days per month
+monthly_food_budget = daily_food_budget*30
+
+# Set your monthly entertainment budget
+monthly_entertainment_budget = 200
+
+# Allocate funds for unforeseen expenses, just in case
+monthly_unforeseen_expenses = 250
+
+# Next, calculate your total monthly expenses
+monthly_expenses = monthly_unforeseen_expenses+monthly_entertainment_budget+monthly_food_budget+monthly_rent
+print("Monthly expenses: " + str(round(monthly_expenses, 2)))
+
+# Finally, calculate your monthly take-home savings
+monthly_savings = monthly_takehome_salary - monthly_expenses
+print("Monthly savings: " + str(round(monthly_savings, 2)))
+Forecast salary growth and cost of living
+Due to both inflation and increased productivity from experience, you can expect your salary to grow at different rates depending on your job. Now, since you are working in a growing and in-demand career field as a Data Scientist, you can assume a steady growth in your annual salary every year based on performance.
+You can assume an annual salary growth rate of 5%, which means if you start at $85,000 per year, you can expect to earn over $176,000 per year after 15 years. After taxes, assuming your tax rate hasn't changed, that works out to roughly $125,000 per year, which is not unreasonable for a Data Scientist. In fact, you might even make it to that level in a few years! But just to be safe, you should be conservative with your projections.
+For this application, assume all inflation and salary growth happens in smaller increments on a monthly basis instead of just one large increase at the end of each year.
+monthly_takehome_salary from the previous exercise is available
+
+import numpy as np
+
+# Create monthly forecasts up to 15 years from now
+forecast_months = 12*15
+
+# Set your annual salary growth rate
+annual_salary_growth = 0.05
+
+# Calculate your equivalent monthly salary growth rate
+monthly_salary_growth = (annual_salary_growth+1)**(1/12)-1
+
+# Forecast the cumulative growth of your salary
+cumulative_salary_growth_forecast = np.cumprod(np.repeat(1 + monthly_salary_growth, forecast_months))
+
+# Calculate the actual salary forecast
+salary_forecast = monthly_takehome_salary*cumulative_salary_growth_forecast
+
+# Plot the forecasted salary
+plt.plot(salary_forecast, color='blue')
+plt.show()
+
+Forecast growing expenses due to inflation
+You will also assume your monthly expenses will rise by an average of 2.5% per year due to inflation. This will lead to higher cost of living over time, paying for the same expenses each year but at a higher price. Luckily, your salary is growing faster than inflation, which means you should have more money going into savings each month.
+The monthly_expenses and forecast_months variables from the previous exercise are available.
+
+
+import numpy as np
+
+# Set the annual inflation rate
+annual_inflation = .025
+
+# Calculate the equivalent monthly inflation rate
+monthly_inflation = (annual_inflation+1)**(1/12)-1
+
+# Forecast cumulative inflation over time
+cumulative_inflation_forecast =  np.cumprod(np.repeat(1 + monthly_inflation, forecast_months))
+
+# Calculate your forecasted expenses
+expenses_forecast = monthly_expenses*cumulative_inflation_forecast
+
+# Plot the forecasted expenses
+plt.plot(expenses_forecast, color='red')
+plt.show()
+Calculate your net worth
+Now that you have forecasted your savings and salary over time while taking career progression and inflation into account, you have constructed a time-series which you can use to calculate your cash flows, just like in Chapter 1.
+For this example, all you need to do is subtract your forecasted monthly expenses from your forecasted monthly salary. The remaining cash flow will go straight into your savings account for each month.
+You want to project your cumulative savings over time to see how effective your budgeting process will be given your projections.
+salary_forecast and expenses_forecast from the previous exercises are available.
+import numpy as np
+
+# Calculate your savings for each month
+savings_forecast = salary_forecast - expenses_forecast
+
+# Calculate your cumulative savings over time
+cumulative_savings = np.cumsum(savings_forecast)
+final = 0
+
+# Print the final cumulative savings after 15 years
+final_net_worth = cumulative_savings[len(cumulative_savings)-1]
+print("Your final net worth: " + str(round(final_net_worth, 2)))
+
+# Plot the forecasted savings
+plt.plot(cumulative_savings, color='blue')
+plt.show()
+So you want to be a millionaire?
+Your projections show that you can accumulate over $700,000 in just 15 years by following a strict budget and growing your salary steadily over time.
+But you want to be a millionaire in 15 years, retire young, sip margaritas and travel for the rest of your life. In order to do that, you're going to need to invest.
+Remember the .pmt() function from numpy? You can use this function to calculate how much you need to save each month in order to accumulate your desired wealth over time.
+You still have a lot to learn about the stock market, but your financial advisor told you that you can earn anywhere from 5-10% per year on your capital on average by investing in a low cost index fund.
+You know that the stock market doesn't always go up, but you will assume a modest 7% return per year, which has been the average annual return in the US stock market from 1950-2009.
+The forecast_months variable from the previous exercise is available.
+import numpy as np
+
+# Set the annual investment return to 7%
+investment_rate_annual = .07
+
+# Calculate the monthly investment return
+investment_rate_monthly = (1+investment_rate_annual)**(1/12)-1
+
+# Calculate your required monthly investment to amass $1M
+required_investment_monthly = np.pmt(rate=investment_rate_monthly, nper=(15*12), pv=0, fv=1000000)*-1
+print("You will have to invest $" + str(round(required_investment_monthly, 2)) + " per month to amass $1M over 15 years")
+Investing a percentage of your income (I)
+Unfortunately, you really can't afford to save $3,000 per month in order to amass $1,000,000 after only 15 years.
+But what you can do is start slowly, investing a small percentage of your take-home income each month, which should grow over time as your income grows as well.
+In this exercise, you will lay the foundations to simulate this investing process over time.
+The salary_forecast and expenses_forecast variables are available from the previous exercise.
+The cash_flow_forecast is also available, and is an array of your forecasted salary minus your forecasted expenses. The monthly_investment_percentage variable is already set to 0.30.
+import numpy as np
+
+# Calculate your monthly deposit into your investment account
+investment_deposit_forecast = cash_flow_forecast*monthly_investment_percentage
+
+# The rest goes into your savings account
+savings_forecast_new = cash_flow_forecast * (1-monthly_investment_percentage)
+
+# Calculate your cumulative savings over time
+cumulative_savings_new = np.cumsum(savings_forecast_new)
+
+# Plot your forecasted monthly savings vs investments
+plt.plot(investment_deposit_forecast, color='red')
+plt.plot(savings_forecast_new, color='blue')
+plt.legend(handles=[investments_plot, savings_plot], loc=2)
+plt.show()
+Investing a percentage of your income (II)
+To finish up your investment simulation, you will need to loop through each time period, calculate the growth of any investments you have already made, add your new monthly deposit, and calculate your net worth at each point in time.
+You can do it!
+Cumulative savings (cumulative_savings_new) from the previous exercise is available, and investment_portfolio and net_worth are pre-allocated empty numpy arrays of length equal to forecast_months.
+import numpy as np
+
+# Loop through each forecast period
+for i in range(forecast_months):
+    
+    # Find the previous investment deposit amount
+    if i == 0: 
+        previous_investment = 0
+    else:
+        previous_investment = investment_portfolio[i-1]
+        
+    # Calculate the value of your previous investments, which have grown
+    previous_investment_growth = previous_investment*(1 + investment_rate_monthly)
+    
+    # Add your new deposit to your investment portfolio
+    investment_portfolio[i] =  previous_investment_growth + investment_deposit_forecast[i]
+    
+    # Calculate your net worth at each point in time
+    net_worth[i] = investment_portfolio[i]+ cumulative_savings_new[i]
+         
+# Plot your forecasted cumulative savings vs investments and net worth
+plot_investments(investment_portfolio, cumulative_savings_new, net_worth)
+Inflation-adjusted net worth
+By saving 30% per year, your simulation shows that you can accumulate $896,962.66. Not quite a millionaire, but not bad at all!
+For the sake of simplicity, let's assume you were able to save $900,000 by following your budget.
+But what if you retire 15 years from now? What is $900,000 going to be truly worth 15 years from now?
+import numpy as np
+
+# Set your future net worth
+future_net_worth = 900000
+
+# Set the annual inflation rate to 2.5%
+annual_inflation = .025
+
+# Calculate the present value of your terminal wealth over 15 years
+inflation_adjusted_net_worth = np.pv(rate=annual_inflation, nper=15, pmt=0, fv=-1*future_net_worth)
+print("Your inflation-adjusted net worth: $" + str(round(inflation_adjusted_net_worth, 2)))
+
+
